@@ -56,24 +56,43 @@ using the 'params.f90' file with the included specifications:
 
 make  
 ./create_msm  # Generate a Markov state model
+
 ./main  # Generate Lindblad jump trajectories using default random seed
+
 ./sort  # Reads in data from 'main' and sorts according to where the trajectories ended into ending[12].txt
+
 mkdir ending1
+
 mkdir ending2
+
 mv ending1.txt ending1/ph_jumps.txt  # Path helper reads from ph_jumps.txt
+
 mv ending2.txt ending2/ph_jumps.txt
+
 cp path_helper ending1/  # Organize according to all jumps witnessed in the trajectories
+
 cp path_helper ending2/  
+
 cp markov_mat.txt ending1/ # The equilibrium Markov state model is necessary for vertical analysis, too 
+
 cp markov_mat.txt ending2/
+
 cp evic.txt ending1/  # Contains information about the eigenvectors to avoid reforming the Hamiltonian
+
 cp evic.txt ending2/
+
 cd ending1
+
 ./path_helper  # Reads in data from 'sort' moved to ph_jumps.txt and catalogues what jumps occur
+
 cd ../ending2
+
 ./path_helper  # Reads in data from 'sort' moved to ph_jumps.txt and catalogues what jumps occur
+
 ./markov_analysis  # Reads in data from evic.txt, markov_mat.txt and jumps_markov_mat.txt to find reactive paths
+
 cd ../ending1
+
 ./markov_analysis  
 
 
