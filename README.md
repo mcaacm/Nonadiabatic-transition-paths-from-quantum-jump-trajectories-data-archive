@@ -1,5 +1,5 @@
-The following contains code and data to accompany "Nonadiabatic transition paths
-from quantum jump trajectories" Michelle C. Anderson, Addison J. Schile, and 
+The following contains code and data to accompany 'Nonadiabatic transition paths
+from quantum jump trajectories' Michelle C. Anderson, Addison J. Schile, and 
 David T. Limmer.
 
 LICENSE
@@ -30,7 +30,7 @@ state 1 in the paper writeup.
 
 PROGRAMS
 
-All files are written in FORTRAN 90/95 and are found in the folder code.
+All files are written in FORTRAN 90/95 and are found in the folder 'code.'
 
 The programs necessary to carry out secular Redfield calculations, 
 Lindblad jump calculations, Markov state model analysis, and plotting
@@ -98,14 +98,14 @@ cd ../ending1
 
 The files of principal interest are then:
 
-1) either ending's "thermal_paths_1toB.txt" which contains the reaction pathways
-between eigenstate 1 and eigenstate B as specified in "markov_analysis_utils.f90" as well
+1) either ending's 'thermal_paths_1toB.txt' which contains the reaction pathways
+between eigenstate 1 and eigenstate B as specified in 'markov_analysis_utils.f90' as well
 as information about the average pre and post committor states and fluxes along reaction paths
-2) "ending1/graph_bt_to1.txt" which contains the dominant vertical relaxation
+2) 'ending1/graph_bt_to1.txt' which contains the dominant vertical relaxation
 pathways bound for eigenstate 1 and average information about the post committor jumps and fluxes
-3) "ending2/graph_bt_toB.txt" which contains the dominant vertical relaxation
+3) 'ending2/graph_bt_toB.txt' which contains the dominant vertical relaxation
 pathways bound for eigenstate B and average information about the post committor jumps and fluxes
-4) either ending's "thermal_comm_1toB.txt" which contains the thermal forwards and backwards 
+4) either ending's 'thermal_comm_1toB.txt' which contains the thermal forwards and backwards 
 committors when the source is eigenstate 1 and destination is eigenstate B
 
 
@@ -118,11 +118,16 @@ makefile settings assume that gfortran, Lapack and BLAS are available.
 To change the compiler or library linking settings, edit 'Makefile'.
 
 Note, all programs that call a setup function will write a file 'evic.txt'
-which includes information about the average characteristics of energy eigenvectors of in the format
+which includes information about the average characteristics of energy eigenvectors of in the format:
+
 '(coupling coordinate) (tuning coordinate) (energy) (diabatic population 1) (diabatic population 2)'.
-All programs also produce a file, "plot_ev.txt" which merely contains 
-'(eigenvecor number) (-100 or 100) (eigenvector energy)' which can be used to plot
-the energies of the eigenvectors.
+
+A more human readable version is in 'eigenvector_info.txt' with columns labeled.
+All programs also produce a file, 'plot_ev.txt' which merely contains:
+
+'(eigenvecor number) (-100 or 100) (eigenvector energy)' 
+
+which can be used to plot the energies of the eigenvectors.
 
 It is recommended to use atomic units for all calculations. Although the value of reduced
 Planck's constant can be changed in the parameters file, this option was not thoroughly 
@@ -160,13 +165,18 @@ In the case of a Lindblad jumps run, 'jump_data.txt' will include the complete
 record of all wavefunction propogations, starting from the initial wavefunction
 followed by a print out of the wavefunction at every time at which a jump occurs. The
 wavefunction will be printed with the following format: 
+
 '0 (time) 0
+
 REAL(coefficients(1)) IMAGINARY(coefficients(1)) REAL(coefficients(2)) IMAGINARY(coefficients(2))...'
+
 if the wavefunction has not collapsed to an eigenstate. The coefficients refer to the
 contribution of each energy eigenstate to the overall wavefunction
-If the wavefunction has collapsed to an eigenstate the output will read
+If the wavefunction has collapsed to an eigenstate the output will read:
+
 '0 (time) (collapsed eigenstate)
 REAL(coefficients(collapsed eigenstate)), IMAGINARY(coefficients(collapsed eigenstate))'
+
 meaning only data for the sole occupied entry will be printed to save space. The leading
 zero in the specification line, 'id' in the code, was important when OMP functions were
 employed but is no longer relevant and always set to zero.
@@ -179,11 +189,17 @@ Prepares a Markov State Model of a quantum system from Secular Redfield calculat
 Runs a short secular calculation starting from each eigenstate in turn for the 
 specified system and assembles the populations for each run into a Markov state model
 printed to 'markov_mat.txt' with the following format:
+
 '(n=matrix dimension) (t=duration of propogation)
+
 Equilibrium populations of all energy eigenstates in the system
+
 Populations of eigenstates at t following initialization in energy eigenstate 1
+
 Populations of eigenstates at t following initialization in energy eigenstate 2
+
 ...
+
 Populations of eigenstates at t following initialization in energy eigenstate n'
 
 --------------------------------------------------------------------------------------------
@@ -195,15 +211,19 @@ Deals with analysis of a Markov State Model in which reactive pathways from eige
 'B_estate' in 'markov_analysis_utils.f90'.
 Reads in 'markov_mat.txt' and, if available, 'jumps_markov_mat.txt'. The first is used to 
 determine equilibrium committors. Committors from reactant (energy eigenstate 1) to product
-(energy eigenstate labeled by B) will be written in 'thermal_comm_Bto1.txt in the format
-'(eigenstate) (committor to 1) (committor to B)'. The format for 'thermal_comm_1toB.txt'
-is the same with the destination and origin reversed. The reactive pathway information is
-in 'thermal_paths_1toB.txt' and 'thermal_paths_1toB_plot.txt" with the latter being designed
-for plotting and the former being human readable and containing extra information.
+(energy eigenstate labeled by B) will be written in 'thermal_comm_Bto1.txt in the format:
+
+'(eigenstate) (committor to 1) (committor to B)'.
+
+The format for 'thermal_comm_1toB.txt' is the same with the destination and origin reversed. 
+The reactive pathway information is in 'thermal_paths_1toB.txt' and 'thermal_paths_1toB_plot.txt' 
+with the latter being designed for plotting and the former being human readable and 
+containing extra information.
 
 
 'thermal_paths_1toB.txt' prints the total reactive flux then the reactive paths in order of
-largest flux. The format for this is
+largest flux. The format for this is:
+
 '(pathway flux) (fraction total flux on this pathway) (energy eigenstates on pathway in order)'
 
 In the next section, the same information is then printed again, but this time the eigenstates 
@@ -235,11 +255,17 @@ Reads through the data in 'ph_jumps.txt', which should be the renamed 'ending2.t
 'ending1.txt.' It records every observed jump to determine how many jumps occur between
 any given energy eigenstate. The jump data will be written in the same format as a Markov
 matrix in 'jumps_markov_mat.txt':
+
 '(dimension of matrix)
+
 (Jumps from 1-->1 are not recorded) (Jumps from 1-->2) (Jumps from 1-->3) .... (Jumps from 1-->uncollapsed are impossible)
+
 (Jumps from 2-->1) (Jumps from 2-->2 are not recorded)... (Jumps from 2-->uncollapsed are impossible)
+
 ....
+
 (Jumps from uncollapsed-->1) (Jumps from uncollaped-->2)... (Jumps from uncollapsed to uncollapsed not recorded)'
+
 
 Note that because the uncollapsed wavefuntion has a state in this matrix, the matrix will be one 
 entry larger than the equilibrium Markov state model matrix.
@@ -275,6 +301,7 @@ This does not need to read any information. Plots all wavefunctions specified in
 program will run.
 
 'CI_data/wfn_plots/ef_2d_i.txt' has the format:
+
 '(x coordinate) (y coordinate) (wfn density in diabatic state 1) (wfn density in diabatic state 2) 
 (REAL(wfn value in diabatic state 1)) (IMAGINARY(wavefunction value in diabatic state 2)) 
 (REAL(wavefunction value in diabatic state 1)) (IMAGINARY(wavefunction value in diabatic state 2))'

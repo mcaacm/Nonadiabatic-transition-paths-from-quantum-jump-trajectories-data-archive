@@ -209,19 +209,12 @@ SUBROUTINE setup_H_CI_2bath(H, sigma, evec, eval, H_trans, estate_probs,couple_o
 
   H_temp = H_m
 
-  WRITE(*,*) "H_m"
-  CALL print_mat(H_m)
-  WRITE(*,*) "Q_t"
-  CALL print_mat(Q_t)
 
   IF (PRESENT(Qt_full)) THEN
     Qt_full = Q_t
   END IF
 
   CALL diagonalize_m(m,H_m,evals_m,evec_m)
-
-  WRITE(*,*) "Eigenvectors"
-  CALL print_mat(evec_m)
 
   evec = evec_m(1:m,1:n)
   eval = evals_m(1:n)

@@ -276,7 +276,6 @@ SUBROUTINE read_graph(graph,d,fnum)
     WRITE(*,*) "Error on MSM specifications, iostat, dimension or timescale", reason, d
     STOP
   END IF
-  WRITE(*,*) "d ", d
 
   ALLOCATE(graph(d,d))
   DO i = 1, d
@@ -553,8 +552,8 @@ SUBROUTINE msm_to_net_flux(d,msm)
   INTEGER :: i, j
   IF (DEBUG .EQV. .TRUE.) THEN
     WRITE(*,*) "msm to net flux start flux "
+    CALL print_mat_r8(msm)
   END IF
-  CALL print_mat_r8(msm)
   DO i = 1, d
     DO j = i + 1, d
       IF (msm(i,j) .GT. msm(j,i)) THEN
@@ -568,8 +567,8 @@ SUBROUTINE msm_to_net_flux(d,msm)
   END DO
   IF (DEBUG .EQV. .TRUE.) THEN
     WRITE(*,*) "msm to net flux end flux "
+    CALL print_mat_r8(msm)
   END IF
-  CALL print_mat_r8(msm)
 END SUBROUTINE
 
 ! Given a MSM, calculate for each f_ij entry

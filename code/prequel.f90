@@ -117,7 +117,6 @@ INTEGER FUNCTION get_seed()
  
   i = COMMAND_ARGUMENT_COUNT()
   IF (i .NE. 1) THEN
-    WRITE(*,*) "Command args are equal to ", i
     get_seed = 1
   ELSE
     CALL GET_COMMAND_ARGUMENT(1, arg) 
@@ -129,7 +128,7 @@ INTEGER FUNCTION get_seed()
       get_seed = iarg
     END IF 
   END IF
-  WRITE(*,*) "Using seed base: ", get_seed
+  WRITE(*,*) "Using random seed base: ", get_seed
 END FUNCTION
 
 ! Initialize Fortran built in random number generator

@@ -32,7 +32,7 @@ INTEGER, PARAMETER :: CI = 0  ! Conical intersection
 INTEGER, PARAMETER :: run_type = CI  
 ! Should the CI off-diagonal coupling be \lambda*|Q_c| rather than \lambda*Q_c 
 ! Not covered in the paper but an intersting avenue of future exploration
-INTEGER, PARAMETER :: abs_coupling = 1
+INTEGER, PARAMETER :: abs_coupling = 0
 
 ! When creating a markov state model, how many timesteps to run (tau = dt*msm_steps)
 INTEGER, PARAMETER :: msm_steps = 50
@@ -51,7 +51,7 @@ INTEGER, PARAMETER :: flag_estate_2 = 3  ! Second eigenstate to stop propogation
 ! Number of trajectories for a lindblad run to carry out
 INTEGER, PARAMETER :: ntraj = 10000
 ! Duration for the Redfield propagation (au)
-REAL*8, PARAMETER :: duration = 10000.0d0
+REAL*8, PARAMETER :: duration = 50000.0d0
 ! Time step for rk4 routine
 REAL*8, PARAMETER :: dt = 5.000d0 !duration / (ntimes - 1)
 ! How many iterations of redfield to do between printings of position/diabatic state
@@ -71,8 +71,7 @@ REAL*8, PARAMETER, DIMENSION(nbath) :: eta = (/9.3453302887d-9, 9.3453302887d-9/
 ! Debye bath is 1, Ohmic is 0
 ! ohmic is the default if no valid type is given
 INTEGER, PARAMETER, DIMENSION(nbath) :: bath_type = (/1,1/)
-! Temperature 1/(kb*T). To indicate zero temperature set beta = -1.0d0;
-! any negative value will do but please use -1.0d0
+! Temperature specified via beta=1/(kb*T)
 REAL*8, PARAMETER :: beta = 1052.584412992859d0
 
 ! IMPORTANT!!! Note that internally and in output files the HIGHER ENERGY WELL IS WELL 2, 

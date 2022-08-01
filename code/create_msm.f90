@@ -67,7 +67,6 @@ ALLOCATE(Q_y_g(n,n))
 ! They're important until the end
 ALLOCATE(markov_mat(n,n))
 
-CALL init_rand(get_seed())
 
 H = (0.0d0, 0.0d0)
 evec = (0.0d0, 0.0d0)
@@ -81,7 +80,6 @@ evec_inv = CONJG(TRANSPOSE(evec))
 
 ! Number of propagation steps to run; just one for an MSM probability calculation
 stop_point = msm_steps !IDINT(((duration / dt) + 0.5d0))
-WRITE(*,*) "STOP POINT", stop_point, "times dt", stop_point*dt
 DO i = 1, n
   H_d(i) = H(i,i)
 END DO
@@ -98,7 +96,6 @@ CALL set_G_plus(theta_plus)
 CALL set_G_minus(theta_minus)
 
 revals = REAL(REAL(eval))
-
 CALL secular_rf_setup(diag_mat,odiag_mat,theta_plus,theta_minus,H_d)
 OPEN(89,FILE="markov_mat.txt")
 WRITE(89,*) n, dt*stop_point
@@ -130,6 +127,7 @@ DO l = 1, n
   END DO
 
   WRITE(89,*) REAL(REAL(diag_sig))  ! Already normalized; zero probability to transition to uncollapsed state
+  WRITE(*,*) "Secular Redfield propagation for eigenstate ", l, "complete"
 END DO
 
 WRITE(89,*) evals  ! Useful to have the energy in the MSM file

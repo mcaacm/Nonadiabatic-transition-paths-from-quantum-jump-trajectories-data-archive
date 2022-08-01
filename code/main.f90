@@ -72,15 +72,8 @@ theta_plus = (0.0d0, 0.0d0)
 sigma = (0.0d0,0.0d0)
 eval = (0.0d0,0.0d0)
 
-OPEN(51,FILE="spectral_density.txt")
-DO j = 0,10000
-  WRITE(51,*) j, 0.00002*j, spectral_density(ABS(0.00002d0*j),1)
-END DO
-CLOSE(51)
-
 CALL setup(H,sigma,evec,eval,translated_evecs,estate_probs,couple_op)
 CALL set_G(couple_op)
-WRITE(*,*) "evals are ", eval
 ! Copy and invert the eigenvector matrix
 evec_inv = CONJG(TRANSPOSE(evec))
 
@@ -104,7 +97,6 @@ ELSE  ! Otherwise perform Redfield dynamics
   CALL set_G_plus(theta_plus)
   CALL set_G_minus(theta_minus)
 
-  OPEN(20,file="avgQ.txt")
   ! Perform secular evolution. Non-secular used to be an option, hence this switch remaining
   IF (secular .EQ. 1) THEN 
     OPEN(72,FILE="state_prop.txt")

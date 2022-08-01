@@ -68,12 +68,11 @@ DO i = 1, capacity
   DO 
     success = read_dj_line(15,id,estate,time,wfn,jump_info)
     IF (success .NE. 0) THEN
-       WRITE(*,*) "Read error. Exiting on ", i
+       WRITE(*,*) "Read error. Exiting before reading trajectory ", i
        EXIT
     END IF
     IF (estate .EQ. -1) THEN
       ending(i) = last_estate
-      WRITE(*,*) "Ending ", i, "is", ending(i)
       EXIT 
     END IF
     last_estate = estate
@@ -98,7 +97,6 @@ DO i = 1, capacity
   END IF
 
   IF (ending(i) .EQ. end_state_1) THEN
-    WRITE(*,*) "ending 1 found", ending(i)
     total_ending_1 = total_ending_1 + 1
 
     total_ending_1_5(MOD(i,subs) + 1) = total_ending_1_5(MOD(i,subs) + 1) + 1
@@ -119,7 +117,6 @@ DO i = 1, capacity
       END IF
     END DO
   ELSE IF (ending(i) .EQ. end_state_2) THEN
-    WRITE(*,*) "ending 2 found", ending(i)
     total_ending_2 = total_ending_2 + 1
 
     total_ending_2_5(MOD(i,subs) + 1) = total_ending_2_5(MOD(i,subs) + 1) + 1
@@ -140,7 +137,7 @@ DO i = 1, capacity
       END IF
     END DO
   ELSE
-    WRITE(*,*) "neither ending 1 nor 2 found", ending(i)
+    WRITE(*,*) "Warning: neither ending 1 nor 2 found", ending(i)
   END IF
 
 END DO

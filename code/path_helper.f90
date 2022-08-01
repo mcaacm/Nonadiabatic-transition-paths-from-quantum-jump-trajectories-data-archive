@@ -162,7 +162,7 @@ CLOSE(21)
 
 read_over = i - 1  ! How many trajectories were actually read in
 
-WRITE(*,*) "Read over", i-1, "trajectories.", "Average jumps per trajectory", (1.0d0*num_jumps_seen)/(i-1), &
+WRITE(*,*) "Read over", i-1, "trajectories. Average jumps per trajectory", (1.0d0*num_jumps_seen)/(i-1), &
            "average number of state change jumps per trajectory", (1.0d0*changes_seen)/(i-1)
 
 
@@ -231,7 +231,7 @@ END DO
 CLOSE(29)
 
 ! Write out the number of jumps array
-WRITE(*,*) "max_jumps", max_jump_num_index
+WRITE(*,*) "Maximum number of inter-eigenstate jumps observed", max_jump_num_index
 OPEN(29,FILE="num_jumps_histogram.txt")
 temp_int = NINT(max_jump_num_index/10.0) + 1
 DO i = 1, temp_int
