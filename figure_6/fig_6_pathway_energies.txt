@@ -1,0 +1,12 @@
+# Thermal barrier crossing pathway for \lambda=1.3\lambda_0
+# Step along pathway followed by energy of eigenstate at that step
+
+           1  0.12562963366508484       
+           2  0.12823903560638428      
+           3  0.13050073385238647     
+           4  0.13264350593090057    
+           5  0.13233630359172821   
+           6  0.13025690615177155  
+           7  0.12794083356857300 
+           8  0.12547373771667480    
+           9  0.12285201251506805   

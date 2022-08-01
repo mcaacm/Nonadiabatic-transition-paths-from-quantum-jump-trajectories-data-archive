@@ -1,0 +1,10 @@
+# Index on path, eigenstate energy on said path for relaxation of \lambda=0.3\lambda_0 from vertical to eigenstate 3
+
+           2  0.14548353850841522      
+           3  0.14277486503124237     
+           4  0.14006225764751434    
+           5  0.13734769821166992   
+           6  0.13463199138641357  
+           7  0.13191552460193634 
+           8  0.12919853627681732    
+           9  0.12648116052150726   
