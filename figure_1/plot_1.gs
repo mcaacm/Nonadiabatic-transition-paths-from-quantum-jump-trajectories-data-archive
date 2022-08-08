@@ -2,6 +2,7 @@ set terminal postscript enhanced colour font "Times-Roman,20"
 
 set palette defined (20 '#67001f', 30 '#b2182b', 40 '#d6604d', 50 '#f4a582', 60 '#fddbc7', 70 '#d1e5f0', 80 '#92c5de', 90 '#4393c3', 100 '#2166ac',110 '#053061')
 
+
 # System parameters
 Q0 = (4.1687483787536621 + 4.7293429374694824) / 2.0  # Defining the relative coordinate Q_0
 a = 0.12285201251506805*27.211  # Defining the zero of energy as that of the system's lowest energy eigenvector
@@ -20,7 +21,8 @@ g(x,y) = 0.5*(1.*e1 + 1.*e2 + 1.*kappa1*x + 1.*kappa2*x + 1.*omegast*x**2 + 1.*o
 
 
 # Q_t coordinate of the intersection. The intersection Q_c coordinate is 0.
-intersect2 = (0.5*(-2.*e1*kappa1 + 2.*e2*kappa1 + 2.*e1*kappa2 - 2.*e2*kappa2 + sqrt((2.*e1*kappa1 - 2.*e2*kappa1 - 2.*e1*kappa2 + 2.*e2*kappa2)**2 - 4.*(1.*e1**2 - 2.*e1*e2 + 1.*e2**2)*(kappa1**2 - 2.*kappa1*kappa2 + kappa2**2))))/(kappa1**2 - 2.*kappa1*kappa2 + kappa2**2)
+intersect2 = (0.5*(-2.*e1*kappa1 + 2.*e2*kappa1 + 2.*e1*kappa2 - 2.*e2*kappa2))/(kappa1**2 - 2.*kappa1*kappa2 + kappa2**2)
+
 
 
 set output "figure_1.ps"

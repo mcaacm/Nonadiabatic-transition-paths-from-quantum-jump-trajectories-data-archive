@@ -159,7 +159,7 @@ set origin 0.0,0.6
 set yrange [0:0.85]
 a = 0.12285*27.2113
 set label 'a)' at 0.8,0.5 font "Times-Roman,24"
-set label 'b)' at 17,0.4 font "Times-Roman,24"
+set label 'b)' at 16,0.4 font "Times-Roman,24"
 plot "fig_12_path_to_1.txt" u ($1-1):($2*27.2113 - a) with lines lw 6 lc "black" notitle, "fig_12_path_to_1.txt" u ($1-1):($2*27.2113 -a) pt 5 ps 3 lc "black" notitle
 unset label
 reset
