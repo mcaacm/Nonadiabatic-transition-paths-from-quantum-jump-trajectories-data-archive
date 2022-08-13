@@ -112,6 +112,7 @@ ELSE  ! Otherwise perform Redfield dynamics
     ELSE
       WRITE(72,*) 0, 0, REAL(REAL(sigma(1,1))), REAL(REAL(sigma(2,2)))
     END IF
+    CALL output_info_CI_dmat(i*dt, 21, sigma, evec, evec_inv)
 
     ALLOCATE(diag_mat(n,n))
     ALLOCATE(odiag_mat(n,n))

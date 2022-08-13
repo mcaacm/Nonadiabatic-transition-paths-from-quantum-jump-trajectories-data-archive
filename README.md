@@ -50,6 +50,21 @@ is licensed as specified in 'quadpack.f90' under LGPL.
 
 --------------------------------------------------------------------------------------------
 
+Keep in mind that most programs are stochastic and or depend on solutions to 
+systems of equations which may be poorly conditioned and that the path
+selection algorithm for transition pathways can be noisy. In other words,
+if the dominant pathways for a barrier crossing in one direction do not
+match the dominant pathways for the same barrier crossing in the opposite
+direction, this is likely a sign of a serious problem but if minor
+pathways do not match exactly this is likely due to numerical differences
+when solving the for the committors. Imposing detailed balance on a system,
+even if that system already follows detailed balance rules by definition,
+changes the rule by which the reverse committors are calculated and will have
+an effect on the results. If this effect is not minor or confined to
+less relevant reaction pathways, this may be indicative of a problem.
+
+--------------------------------------------------------------------------------------------
+
 To run a full analysis, including Markov state model and vertical 
 excitation analysis, the following commands would need to be run
 using the 'params.f90' file with the included specifications:
@@ -312,4 +327,5 @@ program will run.
 Optionally, wfn_plot will attempt to open the file 'in_wfns.txt' and read in 2*n real numbers
 from the file which are interpreted to be the real and imaginary parts of every complex
 number required to specify a full truncated basis wavefunction. It will then plot this
-wavefunction. Note that wfn_plot will not normalize this wavefunction.
+wavefunction. Note that wfn_plot will not normalize this wavefunction. The basis must be
+the trunacted energy eigenbasis.

@@ -28,10 +28,10 @@ LOGICAL, PARAMETER :: DEBUG = .FALSE.
 ! Reverse committors can be done without detailed balance imposed (.FALSE.)
 ! or with it (.TRUE.). In detailed balance systems either should be equivalent.
 ! Testing that results are invariatnt to this is one way I set my mind at ease
-LOGICAL, PARAMETER :: detailed_balance = .FALSE.  
+LOGICAL, PARAMETER :: detailed_balance = .TRUE.
 
 ! Eigenstate B (the product eigenstate, bottom of the higher energy well usually)
-INTEGER, PARAMETER :: B_estate = 3
+INTEGER, PARAMETER :: B_estate = 4
 
 CONTAINS
 

@@ -86,7 +86,7 @@ REAL*8, PARAMETER :: omegas_c = 1.00*0.0043364174d0 ! Coupling coordinate freque
 REAL*8, PARAMETER :: omegas_t = 1.00*0.0027194482d0 ! Tuning coordinate frequency
 REAL*8, PARAMETER, DIMENSION(2) :: kappa_t = (/-0.0038586765d0*3.0d0, 0.0054756457d0*2.4d0/) ! Oscillator displacements
 REAL*8, PARAMETER, DIMENSION(2) :: exe = (/0.144792242d0, 0.177866612d0*0.87d0/) ! Base energies of both wells
-REAL*8, PARAMETER :: lambda_s = 0.0096283166d0*1.00d0 ! Diabatic coupling strength
+REAL*8, PARAMETER :: lambda_s = 0.0096283166d0*1.30d0 ! Diabatic coupling strength
 
 ! Size parameters
 ! Dimension of density matrix; must be an even number

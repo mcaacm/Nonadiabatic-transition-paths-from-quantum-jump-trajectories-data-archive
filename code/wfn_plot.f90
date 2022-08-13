@@ -68,6 +68,11 @@ ALLOCATE(Q_y_g(n,n))
 ! Setup system
 CALL setup(H,sigma,evec,eval,translated_evecs,estate_probs,couple_op)
 
+! I want to plot the initially excited wavefunction.
+OPEN(11,FILE="in_wfns.txt")
+WRITE(11,*) org_out(translated_evecs(1:n,1:1))
+CLOSE(11)
+
 ! Fill a grid of Hermite polynomials for the basis
 low = -10.0d0
 high = 10.0d0
@@ -196,10 +201,7 @@ DO
   DO j = 1, n
     wfn(j,1) = CMPLX(temp(2*j - 1),temp(2*j))
   END DO
-  WRITE(*,*) "WFN to plot ", wfn
   wfn_m = MATMUL(evec,wfn)
-  WRITE(*,*) "Basis conversion ", wfn_m
-  WRITE(*,*) "m/2+1", wfn_m(m/2 - 1:m/2 + 1,1)
   !wfn_m = 0.0d0
   !wfn_m(m/2 + 1,1) = 1.0d0
   CALL fill_wf_plot(sz,res,grid,low,high,wfn_m,plot)
@@ -216,7 +218,7 @@ DO
   OPEN(43,FILE=TRIM(fname))
   integral = integrate_grid(res,plot,low,high)
   CALL print_wf_plot(43,plot,low,high,res)
-  WRITE(43,*) "Integrated to", integral
+  WRITE(43,*) "Integrated read wfn to", integral
   CLOSE(43)
 
   i = i + 1
