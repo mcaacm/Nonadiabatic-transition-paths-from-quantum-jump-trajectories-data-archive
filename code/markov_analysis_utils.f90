@@ -31,7 +31,7 @@ LOGICAL, PARAMETER :: DEBUG = .FALSE.
 LOGICAL, PARAMETER :: detailed_balance = .TRUE.
 
 ! Eigenstate B (the product eigenstate, bottom of the higher energy well usually)
-INTEGER, PARAMETER :: B_estate = 4
+INTEGER, PARAMETER :: B_estate = 3
 
 CONTAINS
 
@@ -305,7 +305,9 @@ SUBROUTINE read_evi(d,fnum,even,evpc,evpt,ps1,ps2)
     ps1(i) = pin1
     ps2(i) = pin2
     IF (success .NE. 0) THEN  ! The program can continue without this although some numbers will be garbage
-      WRITE(*,*) "Failed to read all eigenvector information", success
+      WRITE(*,*) "Failed to read all eigenvector information", success, "read", pos1, &
+        pos2, energy, pin1, pin2
+      EXIT
     END IF
   END DO
 END SUBROUTINE
@@ -401,6 +403,8 @@ SUBROUTINE calc_comm(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
   REAL*8, DIMENSION(ni,1) :: solu_mat, B_check
   REAL*8 :: check_1, check_2
 
+  check_1 = 0.0d0
+  check_2 = 0.0d0
   ALLOCATE(comm_mat(ni,ni))
   ! \hat{T} = T_i,j, if i in I and j != i
   ! \hat{T} = T_i,j - 1 if i in I j = i
@@ -518,7 +522,7 @@ SUBROUTINE calc_comm(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
   END DO
 
   IF (detailed_balance .EQV. .TRUE.) THEN  ! Overwrite with detailed balance information
-    IF (check_2 .LT. check_1) THEN
+    IF (check_2 .LT. check_1) THEN  ! Select the linear algebra solution with the least error
       comm_f = 1.0d0 - comm_b
     ELSE
       comm_b = 1.0d0 - comm_f  ! Detailed balance solution
@@ -618,16 +622,31 @@ REAL*8 FUNCTION reactive_flux(d,flux_msm,ni,na,nb,i_def,a_def,b_def)
     DO j = 1, nb
       reactive_flux = reactive_flux + flux_msm(i_def(i),b_def(j))
       IF (DEBUG .EQV. .TRUE.) THEN
-        WRITE(*,*) "Adding reactive flux from ", i_def(i), "to", b_def(j), "value", flux_msm(i_def(i),b_def(j))
+        WRITE(*,*) "Adding reactive flux from ", i_def(i), "to", b_def(j), "value", &
+          flux_msm(i_def(i),b_def(j)), "total", reactive_flux
       END IF
     END DO
     DO j = 1, na
       check = check + flux_msm(a_def(j),i_def(i))
       IF (DEBUG .EQV. .TRUE.) THEN
-        WRITE(*,*) "Adding reactive flux from ", a_def(j), "to", i_def(i), "value", flux_msm(a_def(j),i_def(i))
+        WRITE(*,*) "Adding reactive flux from ", a_def(j), "to", i_def(i), "value", &
+          flux_msm(a_def(j),i_def(i)), "total", check
       END IF
     END DO
   END DO
+  ! Flux straight from a to b counts
+  DO i = 1, na
+    DO j = 1, nb
+      reactive_flux = reactive_flux + flux_msm(a_def(i),b_def(j))
+      IF (DEBUG .EQV. .TRUE.) THEN
+        check = check + flux_msm(a_def(i),b_def(j))
+      END IF
+    END DO
+  END DO
+
+  IF (DEBUG .EQV. .TRUE.) THEN
+     WRITE(*,*) "Total flux ", reactive_flux, "check against", check
+  END IF
 END FUNCTION
 
 ! Continuously extract paths through MSM vertices; pass them back in lengths, paths
