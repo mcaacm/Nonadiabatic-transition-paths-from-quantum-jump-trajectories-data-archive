@@ -23,6 +23,17 @@ MODULE analyze_markov_utils
 
 IMPLICIT NONE
 
+! Changes to the committor calculation routines were made with the goal of
+! improving numerical stability after the generation of the paper data.
+! By default, the new versions are used. To activate the version which should
+! result in exact correspondence with paper data, set this parameter to 1
+! Differences caused by activating/deactivating this parameter should be
+! obvious but should nOT be important. If turning this off changes conclusions,
+! something is wrong either with the system or the code's handling of it.
+! The old version did NOT SUPPORT DETAILED BALANCE ENFORCEMENT and that
+! parameter is ignored if this is set to 1.
+INTEGER, PARAMETER :: old_numerics = 0
+
 ! Print lots of extra information
 LOGICAL, PARAMETER :: DEBUG = .FALSE.
 ! Reverse committors can be done without detailed balance imposed (.FALSE.)
@@ -222,6 +233,36 @@ SUBROUTINE print_mat_r8(M,fnum)
 END SUBROUTINE
 
 ! Solve a double precision A*X=B problem via Lapack
+! This uses slightly different methods and is 
+! probably inferior to solve_system; both of
+! them should produce about equivalent results,
+! however, or something bad is happening.
+SUBROUTINE solve_system_old(d,A,B,X)
+  INTEGER, INTENT(IN) :: d
+  REAL*8, DIMENSION(d,d), INTENT(IN) :: A
+  REAL*8, DIMENSION(d), INTENT(IN) :: B
+  REAL*8, DIMENSION(d), INTENT(OUT) :: X
+  INTEGER, DIMENSION(d) :: ipiv
+  INTEGER :: err
+  REAL*8, DIMENSION(:,:), ALLOCATABLE :: A_mod
+  ALLOCATE(A_mod(d,d))
+  A_mod = A
+  X = B
+  ipiv = 0
+  CALL dgetrf(d,d,A_mod,d,ipiv,err)
+  IF (err .NE. 0) THEN
+    WRITE(*,*) "System not successfully solved"
+    X = 0.0d0
+  ELSE
+    CALL dgetrs('N',d,1,A_mod,d,ipiv,X,d,err)
+    IF (err .NE. 0) THEN
+      WRITE(*,*) "System not successfully solved"
+    END IF
+  END IF
+  DEALLOCATE(A_mod)
+END SUBROUTINE
+
+! Solve a double precision A*X=B problem via Lapack
 ! I think this has more variables than it really needed
 ! but this isn't Fortran 66 so it's fine.
 SUBROUTINE solve_system(d,A,B,X)
@@ -385,26 +426,21 @@ SUBROUTINE read_msm(msm,pis,neq_pis,cprobs,evals,d,dt,fnum)
   END DO
 END SUBROUTINE
 
-! Analysis of MSM. Calculate the committors according to the formula presented in
-! www.pnas.org/cgi/doi/10.1073/pnas.0905466106
-! i_def, a_def, and b_def contain the indexes of entries in I, B, and A
-! They should be in increasing order but it will probably work if they aren't.
-SUBROUTINE calc_comm(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
-  REAL*8, DIMENSION(d,d), INTENT(IN) :: msm ! Markov state model
+! Old version of calc_comm; new one is (hopefully) more numerically stable but this is
+! the one used to generate all relevant data. The new one just uses a slightly different
+! version of LAPACK
+SUBROUTINE calc_comm_old(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
+ REAL*8, DIMENSION(d,d), INTENT(IN) :: msm
   REAL*8, DIMENSION(d), INTENT(OUT) :: comm_f, comm_b  ! Forward committor, backward committor
   REAL*8, DIMENSION(d), INTENT(IN) :: pis  ! Equilibrium probabilities
-  INTEGER, DIMENSION(ni), INTENT(IN) :: i_def  ! Indexes not in reactants or products
-  INTEGER, DIMENSION(na), INTENT(IN) :: a_def  ! Reactant indexes
-  INTEGER, DIMENSION(nb), INTENT(IN) :: b_def  ! Product indexes
+  INTEGER, DIMENSION(ni), INTENT(IN) :: i_def
+  INTEGER, DIMENSION(na), INTENT(IN) :: a_def
+  INTEGER, DIMENSION(nb), INTENT(IN) :: b_def
   INTEGER, INTENT(IN) :: d, ni, nb, na  ! Dimension of n, Numbers of eigenstate in I, A, B
   INTEGER :: i, j
   REAL*8, DIMENSION(:,:), ALLOCATABLE :: comm_mat
   REAL*8, DIMENSION(ni) :: B_mat, solu
   REAL*8, DIMENSION(ni,1) :: solu_mat, B_check
-  REAL*8 :: check_1, check_2
-
-  check_1 = 0.0d0
-  check_2 = 0.0d0
   ALLOCATE(comm_mat(ni,ni))
   ! \hat{T} = T_i,j, if i in I and j != i
   ! \hat{T} = T_i,j - 1 if i in I j = i
@@ -413,7 +449,6 @@ SUBROUTINE calc_comm(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
   IF (DEBUG .EQV. .TRUE.) THEN
     WRITE(*,*) "I def ", i_def, "a def", a_def, "b def", b_def
   END IF
-
   comm_mat = 0.0d0
   comm_f = 0.0d0
   comm_b = 0.0d0
@@ -421,7 +456,6 @@ SUBROUTINE calc_comm(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
   solu = 0.0d0
   solu_mat = 0.0d0
   B_check = 0.0d0
-
   DO i = 1, ni
     DO j = 1, ni
       ! Indexes of the I matrix extracted form the array of its definition
@@ -445,20 +479,16 @@ SUBROUTINE calc_comm(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
     CALL print_mat_r8(comm_mat,6)
     WRITE(*,*) "Sending to solve"
   END IF
-
   ! Solve the system to get the forward committors.
-  CALL solve_system(ni,comm_mat,B_mat,solu)
+  CALL solve_system_old(ni,comm_mat,B_mat,solu)
   IF (DEBUG .EQV. .TRUE.) THEN
     WRITE(*,*) "Solved. Solution ", solu
   END IF
   solu_mat(1:ni,1) = solu(1:ni)
-
   B_check = MATMUL(comm_mat,solu_mat)
   IF (DEBUG .EQV. .TRUE.) THEN
-    check_1 = SUM(ABS(B_check(1:ni,1) - B_mat(1:ni)))
     WRITE(*,*) "CHECK: ", B_check(1:ni,1) - B_mat(1:ni), SUM(ABS(B_check(1:ni,1) - B_mat(1:ni)))
   END IF
-
   ! Set up the commutator Vector putting I then A then B entries in place by indexes given
   DO i = 1, ni
     comm_f(i_def(i)) = solu(i)
@@ -469,9 +499,7 @@ SUBROUTINE calc_comm(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
   DO i = 1, nb
     comm_f(B_def(i)) = 1.0d0
   END DO
-
   ! Backwards committor is 1 - forwards committor for detailed balance systems; but those aren't all I might care about
-
   ! backwards ~T_{i,j) = pi(j)/pi(i)*T_{j,i}
   DO i = 1, ni
     DO j = 1, ni
@@ -496,20 +524,16 @@ SUBROUTINE calc_comm(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
     CALL print_mat_r8(comm_mat,6)
     WRITE(*,*) "Sending to solve"
   END IF
-
   ! Solve the system to get the backwards committors
-  CALL solve_system(ni,comm_mat,B_mat,solu)
+  CALL solve_system_old(ni,comm_mat,B_mat,solu)
   IF (DEBUG .EQV. .TRUE.) THEN
     WRITE(*,*) "Solved. Solution ", solu
   END IF
   solu_mat(1:ni,1) = solu(1:ni)
-
   !B_check = MATMUL(comm_mat,solu_mat)
   IF (DEBUG .EQV. .TRUE.) THEN
-    check_2 = SUM(ABS(B_check(1:ni,1) - B_mat(1:ni)))
     WRITE(*,*) "CHECK: ", B_check(1:ni,1) - B_mat(1:ni), SUM(ABS(B_check(1:ni,1) - B_mat(1:ni)))
   END IF
-
   ! Set up the commutator Vector putting I then A then B entries in place by indexes given
   DO i = 1, ni
     comm_b(i_def(i)) = solu(i)
@@ -520,17 +544,7 @@ SUBROUTINE calc_comm(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
   DO i = 1, nb
     comm_b(B_def(i)) = 0.0d0
   END DO
-
-  IF (detailed_balance .EQV. .TRUE.) THEN  ! Overwrite with detailed balance information
-    IF (check_2 .LT. check_1) THEN  ! Select the linear algebra solution with the least error
-      comm_f = 1.0d0 - comm_b
-    ELSE
-      comm_b = 1.0d0 - comm_f  ! Detailed balance solution
-    END IF
-  END IF
-
-
-  ! No committor may be larger than 1.0 or smaller than 0.0. Brute force fix for rounding errors.
+  ! No committor may be larger than 1.0 or smaller than 0.0. Brute force fix...
   DO i = 1, d
     IF (comm_f(i) .GT. 1.0d0) THEN
       comm_f(i) = 1.0d0
@@ -545,6 +559,175 @@ SUBROUTINE calc_comm(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
       comm_b(i) = 0.0d0
     END IF
   END DO
+  
+END SUBROUTINE
+
+! Analysis of MSM. Calculate the committors according to the formula presented in
+! www.pnas.org/cgi/doi/10.1073/pnas.0905466106
+! i_def, a_def, and b_def contain the indexes of entries in I, B, and A
+! They should be in increasing order but it will probably work if they aren't.
+SUBROUTINE calc_comm(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
+  REAL*8, DIMENSION(d,d), INTENT(IN) :: msm ! Markov state model
+  REAL*8, DIMENSION(d), INTENT(OUT) :: comm_f, comm_b  ! Forward committor, backward committor
+  REAL*8, DIMENSION(d), INTENT(IN) :: pis  ! Equilibrium probabilities
+  INTEGER, DIMENSION(ni), INTENT(IN) :: i_def  ! Indexes not in reactants or products
+  INTEGER, DIMENSION(na), INTENT(IN) :: a_def  ! Reactant indexes
+  INTEGER, DIMENSION(nb), INTENT(IN) :: b_def  ! Product indexes
+  INTEGER, INTENT(IN) :: d, ni, nb, na  ! Dimension of n, Numbers of eigenstate in I, A, B
+  INTEGER :: i, j
+  REAL*8, DIMENSION(:,:), ALLOCATABLE :: comm_mat
+  REAL*8, DIMENSION(ni) :: B_mat, solu
+  REAL*8, DIMENSION(ni,1) :: solu_mat, B_check
+  REAL*8 :: check_1, check_2
+
+  IF (old_numerics .EQ. 1) THEN  ! Use old, potentially less stable calculation
+    CALL calc_comm_old(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
+  ELSE
+
+    check_1 = 0.0d0
+    check_2 = 0.0d0
+    ALLOCATE(comm_mat(ni,ni))
+    ! \hat{T} = T_i,j, if i in I and j != i
+    ! \hat{T} = T_i,j - 1 if i in I j = i
+    ! Build the committor matrix to solve the system of equations for the intermediate state
+    ! A in A*X = B system to be solved
+    IF (DEBUG .EQV. .TRUE.) THEN
+      WRITE(*,*) "I def ", i_def, "a def", a_def, "b def", b_def
+    END IF
+
+    comm_mat = 0.0d0
+    comm_f = 0.0d0
+    comm_b = 0.0d0
+    B_mat = 0.0d0
+    solu = 0.0d0
+    solu_mat = 0.0d0
+    B_check = 0.0d0
+
+    DO i = 1, ni
+      DO j = 1, ni
+        ! Indexes of the I matrix extracted form the array of its definition
+        IF (i .EQ. j) THEN
+          comm_mat(i,j) = msm(i_def(i),i_def(j)) - 1.0d0
+        ELSE
+          comm_mat(i,j) = msm(i_def(i),i_def(j))
+        END IF
+      END DO
+    END DO
+    ! Assemble the B of the A*X = B system; B_i = summation over -T_{i,j} where j is in B
+    B_mat = 0.0d0
+    DO i = 1, ni
+      DO j = 1, nb
+        B_mat(i) = B_mat(i) - msm(i_def(i),b_def(j)) 
+      END DO
+    END DO 
+    IF (DEBUG .EQV. .TRUE.) THEN
+      WRITE(*,*) "Assembled B_mat", B_mat
+      WRITE(*,*) "Comm_mat "
+      CALL print_mat_r8(comm_mat,6)
+      WRITE(*,*) "Sending to solve"
+    END IF
+
+    ! Solve the system to get the forward committors.
+    CALL solve_system(ni,comm_mat,B_mat,solu)
+    IF (DEBUG .EQV. .TRUE.) THEN
+      WRITE(*,*) "Solved. Solution ", solu
+    END IF
+    solu_mat(1:ni,1) = solu(1:ni)
+
+    B_check = MATMUL(comm_mat,solu_mat)
+    check_1 = SUM(ABS(B_check(1:ni,1) - B_mat(1:ni)))
+    IF (DEBUG .EQV. .TRUE.) THEN
+      WRITE(*,*) "CHECK: ", B_check(1:ni,1) - B_mat(1:ni), SUM(ABS(B_check(1:ni,1) - B_mat(1:ni)))
+    END IF
+
+    ! Set up the commutator Vector putting I then A then B entries in place by indexes given
+    DO i = 1, ni
+      comm_f(i_def(i)) = solu(i)
+    END DO
+    DO i = 1, na
+      comm_f(A_def(i)) = 0.0d0
+    END DO
+    DO i = 1, nb
+      comm_f(B_def(i)) = 1.0d0
+    END DO
+
+    ! Backwards committor is 1 - forwards committor for detailed balance systems; but those aren't all I might care about
+
+    ! backwards ~T_{i,j) = pi(j)/pi(i)*T_{j,i}
+    DO i = 1, ni
+      DO j = 1, ni
+        ! Indexes of the I matrix extracted form the array of its definition
+        IF (i .EQ. j) THEN
+          comm_mat(i,j) = msm(i_def(j),i_def(i))*pis(i_def(j))/pis(i_def(i)) - 1.0d0
+        ELSE
+          comm_mat(i,j) = msm(i_def(j),i_def(i))*pis(i_def(j))/pis(i_def(i))
+        END IF
+      END DO
+    END DO
+    ! Assemble the B of the A*X = B system; B_i = summation over -T_{i,j} where j is in B
+    B_mat = 0.0d0
+    DO i = 1, ni
+      DO j = 1, na
+        B_mat(i) = B_mat(i) - msm(a_def(j),i_def(i))*pis(a_def(j))/pis(i_def(i))
+      END DO
+    END DO 
+    IF (DEBUG .EQV. .TRUE.) THEN
+      WRITE(*,*) "Assembled B_mat", B_mat
+      WRITE(*,*) "Comm_mat "
+      CALL print_mat_r8(comm_mat,6)
+      WRITE(*,*) "Sending to solve"
+    END IF
+
+    ! Solve the system to get the backwards committors
+    CALL solve_system(ni,comm_mat,B_mat,solu)
+    IF (DEBUG .EQV. .TRUE.) THEN
+      WRITE(*,*) "Solved. Solution ", solu
+    END IF
+    solu_mat(1:ni,1) = solu(1:ni)
+
+    B_check = MATMUL(comm_mat,solu_mat)
+    check_2 = SUM(ABS(B_check(1:ni,1) - B_mat(1:ni)))
+    IF (DEBUG .EQV. .TRUE.) THEN
+      WRITE(*,*) "CHECK: ", B_check(1:ni,1) - B_mat(1:ni), SUM(ABS(B_check(1:ni,1) - B_mat(1:ni)))
+    END IF
+
+    ! Set up the commutator Vector putting I then A then B entries in place by indexes given
+    DO i = 1, ni
+      comm_b(i_def(i)) = solu(i)
+    END DO
+    DO i = 1, na
+      comm_b(A_def(i)) = 1.0d0
+    END DO
+    DO i = 1, nb
+      comm_b(B_def(i)) = 0.0d0
+    END DO
+
+    IF (detailed_balance .EQV. .TRUE.) THEN  ! Overwrite with detailed balance information
+      IF (check_2 .LT. check_1) THEN  ! Select the linear algebra solution with the least error
+        comm_f = 1.0d0 - comm_b
+      ELSE
+        comm_b = 1.0d0 - comm_f  ! Detailed balance solution
+      END IF
+    END IF
+
+
+    ! No committor may be larger than 1.0 or smaller than 0.0. Brute force fix for rounding errors.
+    DO i = 1, d
+      IF (comm_f(i) .GT. 1.0d0) THEN
+        comm_f(i) = 1.0d0
+      END IF
+      IF (comm_f(i) .LT. 0.0d0) THEN
+        comm_f(i) = 0.0d0
+      END IF
+      IF (comm_b(i) .GT. 1.0d0) THEN
+        comm_b(i) = 1.0d0
+      END IF
+      IF (comm_b(i) .LT. 0.0d0) THEN
+        comm_b(i) = 0.0d0
+      END IF
+    END DO
+
+  END IF
   
 END SUBROUTINE
 
