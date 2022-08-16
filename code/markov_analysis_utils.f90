@@ -32,17 +32,23 @@ IMPLICIT NONE
 ! something is wrong either with the system or the code's handling of it.
 ! The old version did NOT SUPPORT DETAILED BALANCE ENFORCEMENT and that
 ! parameter is ignored if this is set to 1.
-INTEGER, PARAMETER :: old_numerics = 0
+INTEGER, PARAMETER :: old_numerics = 1
 
 ! Print lots of extra information
 LOGICAL, PARAMETER :: DEBUG = .FALSE.
 ! Reverse committors can be done without detailed balance imposed (.FALSE.)
 ! or with it (.TRUE.). In detailed balance systems either should be equivalent.
-! Testing that results are invariatnt to this is one way I set my mind at ease
-LOGICAL, PARAMETER :: detailed_balance = .TRUE.
+! I usually choose not to force this because I have seen it cause problems
+! in certain cases. The forcing is implemented by calculating both forward
+! and reverse committors and then treating the SMALLER NUMBER as correct.
+! A black and white approach of using the forward committor to calculate
+! the backward committor for all values will lead to serious problems in
+! some systems which will be obvious, i.e. forward and backwards pathways
+! not matching, flux not matching, bizarre path weights.
+LOGICAL, PARAMETER :: detailed_balance = .FALSE.
 
 ! Eigenstate B (the product eigenstate, bottom of the higher energy well usually)
-INTEGER, PARAMETER :: B_estate = 3
+INTEGER, PARAMETER :: B_estate = 4
 
 CONTAINS
 
@@ -578,14 +584,11 @@ SUBROUTINE calc_comm(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
   REAL*8, DIMENSION(:,:), ALLOCATABLE :: comm_mat
   REAL*8, DIMENSION(ni) :: B_mat, solu
   REAL*8, DIMENSION(ni,1) :: solu_mat, B_check
-  REAL*8 :: check_1, check_2
 
   IF (old_numerics .EQ. 1) THEN  ! Use old, potentially less stable calculation
     CALL calc_comm_old(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
   ELSE
 
-    check_1 = 0.0d0
-    check_2 = 0.0d0
     ALLOCATE(comm_mat(ni,ni))
     ! \hat{T} = T_i,j, if i in I and j != i
     ! \hat{T} = T_i,j - 1 if i in I j = i
@@ -635,7 +638,6 @@ SUBROUTINE calc_comm(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
     solu_mat(1:ni,1) = solu(1:ni)
 
     B_check = MATMUL(comm_mat,solu_mat)
-    check_1 = SUM(ABS(B_check(1:ni,1) - B_mat(1:ni)))
     IF (DEBUG .EQV. .TRUE.) THEN
       WRITE(*,*) "CHECK: ", B_check(1:ni,1) - B_mat(1:ni), SUM(ABS(B_check(1:ni,1) - B_mat(1:ni)))
     END IF
@@ -686,7 +688,6 @@ SUBROUTINE calc_comm(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
     solu_mat(1:ni,1) = solu(1:ni)
 
     B_check = MATMUL(comm_mat,solu_mat)
-    check_2 = SUM(ABS(B_check(1:ni,1) - B_mat(1:ni)))
     IF (DEBUG .EQV. .TRUE.) THEN
       WRITE(*,*) "CHECK: ", B_check(1:ni,1) - B_mat(1:ni), SUM(ABS(B_check(1:ni,1) - B_mat(1:ni)))
     END IF
@@ -703,11 +704,16 @@ SUBROUTINE calc_comm(d,msm,comm_f,comm_b,ni,nb,na,i_def,a_def,b_def,pis)
     END DO
 
     IF (detailed_balance .EQV. .TRUE.) THEN  ! Overwrite with detailed balance information
-      IF (check_2 .LT. check_1) THEN  ! Select the linear algebra solution with the least error
-        comm_f = 1.0d0 - comm_b
-      ELSE
-        comm_b = 1.0d0 - comm_f  ! Detailed balance solution
-      END IF
+      ! Always keep the smaller number to avoid overwriting small
+      ! but significant committors with 0
+      DO i = 1, ni
+        IF (comm_b(i) .GT. comm_f(i)) THEN
+          comm_b(i) = 1.0d0 - comm_f(i)
+        ELSE
+          comm_f(i) = 1.0d0 - comm_b(i)
+        END IF
+      END DO
+
     END IF
 
 

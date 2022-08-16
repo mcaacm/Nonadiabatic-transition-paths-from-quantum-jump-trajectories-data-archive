@@ -1,4 +1,4 @@
-! Data for the post committor state (committment to R from L) for various coupling strengths for dominant thermal transition pathways
+! Data for the post committor state (committment to R from L) for various coupling strengths for dominant thermal transition pathways; Direction is B to 1
 ! Factor multiplying labmda, average energy, average Q_c, average Q_t, diabatic state 2 character, diabatic state 1 character, forward committor, energy of lowest eigenstate in system 
 
 0.05 0.14432069876522757       -2.3977182549421984E-016   4.2549421277731474       0.99980036066247802        1.9963969290847522E-004  0.99467334220436954  0.12368100881576538 

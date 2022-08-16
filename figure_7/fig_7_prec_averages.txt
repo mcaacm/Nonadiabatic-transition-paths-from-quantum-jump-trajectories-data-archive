@@ -1,4 +1,4 @@
-! Data for the pre committor state (committor to R from L) for various coupling strengths for dominant thermal transition pathways
+! Data for the pre committor state (committor to R from L) for various coupling strengths for dominant thermal transition pathways; Direction is B to 1
 ! Factor multiplying labmda, average energy, average Q_c, average Q_t, diabatic state 2 character, diabatic state 1 character, forward committor, energy of lowest eigenstate in system 
 
 0.05 0.14418798522053580       -3.9965859339788121E-016  -4.8306305733258634        1.9824528589426418E-004  0.99980175790625458        4.9964262925765637E-003 0.12368100881576538 

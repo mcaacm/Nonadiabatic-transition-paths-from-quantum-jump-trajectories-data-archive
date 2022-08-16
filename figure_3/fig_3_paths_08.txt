@@ -1,3 +1,4 @@
+# Cummulative flux accounted for as a function of pathway in the R-->L direction
 #  Index          Path Flux       Relative Flux
 	   0 0 0 
            1   2.9028586443736322E-012  0.16043112242812146     

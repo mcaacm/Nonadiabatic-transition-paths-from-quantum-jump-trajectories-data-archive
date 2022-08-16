@@ -15,6 +15,10 @@ See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with TPT_CI. 
 If not, see <https://www.gnu.org/licenses/>.
 
+ZENODO 
+
+This repository is archived permanently at: 10.5281/zenodo.6950371
+
 PAPER DATA
 
 Data and gnuplot scripts necessary to regenerate the figures in the paper are found
@@ -39,6 +43,12 @@ wfn_plot. The file params.f90 contains specifications to control the
 programs, with a few controls being present in other program files, most
 of these referring to very specific functions such as whether to impose
 detailed balance when calculating committors in markov_analysis.
+Note that detailed balance imposition is done after calculating both
+forward and backward committors numerically and choosing, for each state in 
+the Markov state model, the smaller of the two, be it forward or reverse, 
+then using this smaller value to calculate its complement. This avoids 
+catastrophic problems which result when important, small numbers
+are overwritten with zero to enforce detailed balance.
 
 The programs can be compiled from the given Makefile with
 
